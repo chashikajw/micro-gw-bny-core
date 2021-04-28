@@ -1,0 +1,10 @@
+asspath
+.project
+.settings/**
+.sts4-cache/**
+.idea/**
+src/micro-gw-core/ballerina*
+src/ballerina*
+src/micro-gw-core/target/
+src/micro-gw-core/lib/
+

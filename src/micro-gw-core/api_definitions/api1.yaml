@@ -1,0 +1,29 @@
+openapi: 3.0.1
+info:
+  title: CJWAPI_V1
+  version: 1.0.0
+servers:
+  - url: /
+paths:
+  /72401357-9446-4251-8a98-09fac1257127:
+    get:
+      responses:
+        '200':
+          description: OK
+   
+      x-throttling-tier: Unlimited
+
+
+
+x-wso2-production-endpoints:
+  urls:
+    - 'http://run.mocky.io/v3/'
+  type: http
+x-wso2-sandbox-endpoints:
+  urls:
+    - 'http://run.mocky.io/v3/'
+  type: http
+x-wso2-basePath: /bny/v1
+x-wso2-disable-security: true
+x-wso2-request-interceptor: java:mgw.interceptor.SampleInterceptor
+x-wso2-response-interceptor: java:mgw.interceptor.SampleInterceptor
