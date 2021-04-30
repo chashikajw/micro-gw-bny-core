@@ -1,0 +1,50 @@
+FROM hubble.bnymellon.net:5000/bnym/base/java/java8:8u252-20.11.1
+
+LABEL npx.wso2base.version="1.0.0"
+LABEL maintainer "NXNReverseProxy@bnymellon.com"
+ENV MAVEN_INSTALL_DIR=/usr/local \
+    WSO2MG_BASE=/app/npx/reverseproxy \
+    WSO2MG_HOME=/app/npx/reverseproxy/microGateway \
+	WSO2MG_APP_HOME=/app/npx/reverseproxy/apps \
+    MG_CONFIG_HOME=/app/npx/reverseproxy/config \
+	API_CONFIG_HOME=/app/npx/reverseproxy/apiconfig \
+    LOGDIR=/app/npx/reverseproxy/wso2mglogs \        
+    WSO2_VERSION=3.2.0 \
+    MAVEN_VERSION=3.5.3 \
+    M2_HOME=/usr/local/maven \
+    PATH="/usr/local/maven/bin:${PATH}"
+
+WORKDIR /monitoring
+RUN mkdir -p appdynamics && \
+	curl -f -L -o /monitoring/appdynamics/appdynamics-4.5.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=thirdparty&g=com.appdynamics&a=appserveragent&v=4.5.10.25916&e=zip" && \
+	unzip -o /monitoring/appdynamics/appdynamics-4.5.zip -d /monitoring/appdynamics/appdynamics-4.5-AppServerAgent-4.5 && \
+	curl -f -L -o /monitoring/appdynamics/appdynamics-tools.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=bxp3-platform-releases&g=dyc.appdynamics&a=javaAgentTools&v=1.0.0&e=zip" && \
+	unzip -o /monitoring/appdynamics/appdynamics-tools.zip -d /usr/lib/jvm/jre/lib/ext
+
+#Install maven
+WORKDIR $MAVEN_INSTALL_DIR
+RUN curl -f -L -o $MAVEN_INSTALL_DIR/maven-$MAVEN_VERSION.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=thirdparty&g=apache&a=maven&v=$MAVEN_VERSION&e=zip" \
+    && unzip -q maven-$MAVEN_VERSION.zip \
+    && ln -s apache-maven-$MAVEN_VERSION maven \
+    && rm -rf maven-$MAVEN_VERSION.zip
+# INSTALL WSO2MG
+RUN mkdir -p $WSO2MG_HOME \
+    && curl -f -L -o $WSO2MG_HOME/wso2am-micro-gw-$WSO2_VERSION.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=thirdparty&g=org.wso2.am.microgw&a=wso2am-micro-gw&v=$WSO2_VERSION&e=zip&c=linux" \
+    && unzip -q $WSO2MG_HOME/wso2am-micro-gw-$WSO2_VERSION.zip -d $WSO2MG_HOME \
+    && rm -rf $WSO2MG_HOME/wso2am-micro-gw-$WSO2_VERSION.zip
+RUN chmod 777 -Rc $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION/*
+RUN mkdir -p $MG_CONFIG_HOME
+RUN curl -f -L -o $MG_CONFIG_HOME/config.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=d-BNYMellon-releases&g=com.bnym.npx&a=npx-reverseproxy-config&v=1.0.13&e=zip" \
+    && unzip -q $MG_CONFIG_HOME/config.zip -d $MG_CONFIG_HOME \
+    && rm -rf $MG_CONFIG_HOME/config.zip
+RUN chmod 777 -Rc $MG_CONFIG_HOME/*	
+RUN mkdir -p $API_CONFIG_HOME
+RUN curl -f -L -o $API_CONFIG_HOME/api_config.zip "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=d-BNYMellon-releases&g=com.bnym.npx&a=npx-api-config&v=1.0.2&e=zip" \
+    && unzip -q $API_CONFIG_HOME/api_config.zip -d $API_CONFIG_HOME \
+    && rm -rf $API_CONFIG_HOME/api_config.zip	
+RUN chmod 777 -Rc $API_CONFIG_HOME/*
+RUN python $MG_CONFIG_HOME/microGateway/install/installcerts.py
+RUN mkdir -p $WSO2MG_APP_HOME \
+	&& curl -f -L -o $WSO2MG_APP_HOME/micro-gw-core.jar "http://nexus.bnymellon.net/nexus/service/local/artifact/maven/redirect?r=d-BNYMellon-releases&g=com.bnym.npx&a=micro-gw-core&v=1.0.3&e=jar"
+
+RUN chmod 777 -Rc $WSO2MG_BASE/*
