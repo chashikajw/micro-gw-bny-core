@@ -12,6 +12,8 @@ generate_files () {
       -DartifactId=$version \
       -Dclustername=cjwcluster \
       -DinteractiveMode=false
+
+    echo "File generation successfully"
 }
 
 ### Check if a version folder is exist ###
