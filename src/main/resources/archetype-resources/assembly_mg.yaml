@@ -1,0 +1,137 @@
+kind: "assembly"
+version: "3.0.0"
+
+meta:
+  name: "Reverse Proxy"
+  family: "nxnrpfm"
+  app: "reverseproxy"
+  org-id: "npx"
+services:  
+  mg:
+    image: hubble.bnymellon.net:5000/bnym/linux/npx/nxnrpfm/reverseproxy/mg:1.0.6
+    
+    ports: 
+      - mapping: "9095:9095"
+        name: "mg"
+        ssl: true
+        urls:
+          - npxrp.bnymellon.net
+                    
+    environment:
+        TZ: "America/New_York"
+        
+    healthChecks:
+      - protocol: "HTTPS"        
+        path: "/health"        
+        gracePeriodSeconds: 180       
+        intervalSeconds: 20      
+        portIndex: 0        
+        timeoutSeconds: 60        
+        maxConsecutiveFailures: 3  
+     
+deployments:
+  dev:
+    mg:
+      instances: 3
+      mem: 8192
+      cpus: 0.5 
+      environment:
+        APPD_APPNAME: "NEXEN_Reverse_Proxy_Gateway(NPX)-DEV"
+        Domain: "Dev"
+        AE_USER: 'true'
+        AE_USER_GID: '200008177'
+        AE_USER_UID: '200008177'
+        AE_USER_GNAME: npx_dev_run_ae00_g
+        AE_USER_UNAME: npx_dev_run_ae00
+        JAVA_OPTS: "-Xms3072m -Xmx6144m ${APPD_PROPS} -Dappdynamics.controller.hostName=dyc-controller-gf-1.dev.bnymellon.net -javaagent:/monitoring/appdynamics/appdynamics-4.5-AppServerAgent-4.5/javaagent.jar -Xbootclasspath/a:/usr/lib/jvm/jre/lib/ext/tools.jar
+        -Dappdynamics.force.default.ssl.certificate.validation=false"
+        AE_SHELL: true      
+        AE_SHELL_PW_DEV: "testapp"        
+        $MG_CONFIG_HOME: $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION      
+      secrets:
+        files:
+          - nxnrpfm/reverseproxy/micro-gateway-run.sh
+          - nxnrpfm/reverseproxy/server.crt
+          - nxnrpfm/reverseproxy/server.key
+          - nxnrpfm/reverseproxy/jwt-config.properties
+        command: "sh /bxp/secrets/nxnrpfm/reverseproxy/micro-gateway-run.sh $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION $WSO2MG_APP_HOME -XX:OnOutOfMemoryError='echo OOM-nxnrpfm-reverseproxy-mg'"        
+  test:
+    mg:
+      instances: 5
+      mem: 8192
+      cpus: 2 
+      environment:
+        APPD_APPNAME: "NEXEN_Reverse_Proxy_Gateway(NPX)-TEST"        
+        Domain: "Test"
+        AE_USER: 'true'
+        AE_USER_GID: '200008305'
+        AE_USER_UID: '200008305'
+        AE_USER_GNAME: npx_test_run_ae00_g
+        AE_USER_UNAME: npx_test_run_ae00
+        JAVA_OPTS: "-Xms3072m -Xmx8192m ${APPD_PROPS} -Dappdynamics.agent.tierName=test.nxnrpfm.reverseproxy.mg -Dappdynamics.agent.maxMetrics=9999 
+            -javaagent:/monitoring/appdynamics/appdynamics-4.5-AppServerAgent-4.5/javaagent.jar -Xbootclasspath/a:/usr/lib/jvm/jre/lib/ext/tools.jar
+            -Dappdynamics.controller.hostName=dyc-controller-gf-1.dev.bnymellon.net -Dappdynamics.force.default.ssl.certificate.validation=false"
+        AE_SHELL: true              
+        $MG_CONFIG_HOME: $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION
+      secrets:
+        files:
+          - nxnrpfm/reverseproxy/ae-shell-credentials.txt
+          - nxnrpfm/reverseproxy/micro-gateway-run.sh
+          - nxnrpfm/reverseproxy/server.crt
+          - nxnrpfm/reverseproxy/server.key
+          - nxnrpfm/reverseproxy/jwt-config.properties
+        command: "sh /bxp/secrets/nxnrpfm/reverseproxy/micro-gateway-run.sh $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION $WSO2MG_APP_HOME -XX:OnOutOfMemoryError='echo OOM-nxnrpfm-reverseproxy-mg'"
+  qa:
+    mg:
+      instances: 5
+      mem: 8192
+      cpus: 2 
+      environment:
+        APPD_APPNAME: "NEXEN_Reverse_Proxy_Gateway(NPX)-QA"
+        Domain: "Qa"
+        AE_USER: 'true'
+        AE_USER_GID: '200008304'
+        AE_USER_UID: '200008304'
+        AE_USER_GNAME: npx_qa_run_ae00_g
+        AE_USER_UNAME: npx_qa_run_ae00        
+        AE_SHELL: true      
+        AE_SHELL_PW_QA: "testapp"        
+        JAVA_OPTS: "-Xms3072m -Xmx8192m ${APPD_PROPS} -Dappdynamics.agent.tierName=qa.nxnrpfm.reverseproxy.mg -Dappdynamics.agent.maxMetrics=9999 
+            -javaagent:/monitoring/appdynamics/appdynamics-4.5-AppServerAgent-4.5/javaagent.jar -Xbootclasspath/a:/usr/lib/jvm/jre/lib/ext/tools.jar
+            -Dappdynamics.controller.hostName=dyc-controller-gf-1.dev.bnymellon.net -Dappdynamics.force.default.ssl.certificate.validation=false"
+        
+        $MG_CONFIG_HOME: $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION 
+      secrets:
+        files:
+          - nxnrpfm/reverseproxy/ae-shell-credentials.txt
+          - nxnrpfm/reverseproxy/micro-gateway-run.sh
+          - nxnrpfm/reverseproxy/server.crt
+          - nxnrpfm/reverseproxy/server.key
+          - nxnrpfm/reverseproxy/jwt-config.properties
+        command: "sh /bxp/secrets/nxnrpfm/reverseproxy/micro-gateway-run.sh $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION $WSO2MG_APP_HOME -XX:OnOutOfMemoryError='echo OOM-nxnrpfm-reverseproxy-mg'"  
+  prod:
+    mg:
+      instances: 5
+      mem: 8192
+      cpus: 2 
+      environment:
+        APPD_APPNAME: "NEXEN_Reverse_Proxy_Gateway(NPX)-Prod"
+        Domain: "Prod"
+        AE_USER: 'true'
+        AE_USER_GID: '200008303'
+        AE_USER_UID: '200008303'
+        AE_USER_GNAME: npx_prod_run_ae00_g
+        AE_USER_UNAME: npx_prod_run_ae00
+        JAVA_OPTS: "-Xms3072m -Xmx8192m ${APPD_PROPS} 
+            -Dappdynamics.agent.tierName=prod.nxnrpfm.reverseproxy.mg -Dappdynamics.agent.maxMetrics=9999 
+            -javaagent:/monitoring/appdynamics/appdynamics-4.5-AppServerAgent-4.5/javaagent.jar -Xbootclasspath/a:/usr/lib/jvm/jre/lib/ext/tools.jar
+            -Dappdynamics.controller.hostName=dyc-controller-gf-1.bnymellon.net -Dappdynamics.force.default.ssl.certificate.validation=false"
+        $MG_CONFIG_HOME: $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION 
+      secrets:
+        files:
+          - nxnrpfm/reverseproxy/micro-gateway-run.sh
+          - nxnrpfm/reverseproxy/server.cer
+          - nxnrpfm/reverseproxy/server.key
+          - nxnrpfm/reverseproxy/jwt-config.properties
+        command: "sh /bxp/secrets/nxnrpfm/reverseproxy/micro-gateway-run.sh $WSO2MG_HOME/wso2am-micro-gw-linux-$WSO2_VERSION $WSO2MG_APP_HOME -XX:OnOutOfMemoryError='echo OOM-nxnrpfm-reverseproxy-mg'"                              
+      

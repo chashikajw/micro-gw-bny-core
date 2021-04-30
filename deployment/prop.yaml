@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: ${version}
+logging:
+  pattern:
+    console: ""
+management:
+  security:
+    enabled: false
+server:
+  port: ${PORT:4001}

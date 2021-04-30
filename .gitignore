@@ -6,4 +6,5 @@ asspath
 src/micro-gw-core/ballerina*
 src/ballerina*
 src/micro-gw-core/target/
+target
 
