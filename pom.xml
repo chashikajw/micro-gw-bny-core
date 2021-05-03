@@ -6,7 +6,7 @@
 
     <groupId>org.example</groupId>
     <artifactId>micro-gw-bny-core</artifactId>
-    <version>1.1.5-SNAPSHOT</version>
+    <version>1.1.7-SNAPSHOT</version>
     <name>BNY Maven Archetype</name>
     <packaging>maven-archetype</packaging>
 
