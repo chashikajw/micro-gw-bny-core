@@ -6,7 +6,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         name="micro-gw-bny-core">
     <requiredProperties>
-        <requiredProperty key="clustername"/>
+        <requiredProperty key="customVariable"/>
+        <requiredProperty key="version"/>
     </requiredProperties>
 
     <fileSets>
